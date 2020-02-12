@@ -10,19 +10,26 @@ module Dry
       # @api private
       class Railtie < ::Rails::Railtie
         config.to_prepare do
+          Railtie.create_container
+        end
+
+        config.after_initialize do
           Railtie.finalize!
         end
 
         # @api private
-        def finalize!
+        def create_container
           container = System::Rails.create_container(name: name)
 
           set_or_reload(:Container, container)
           set_or_reload(:Import, container.injector)
 
           container.refresh_boot_files if reloading?
+        end
 
-          container.finalize! unless ::Rails.env.test?
+        # @api private
+        def finalize!
+          app_namespace::Container.finalize! unless ::Rails.env.test?
         end
 
         # @api private
