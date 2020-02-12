@@ -40,9 +40,11 @@ module Dry
           root: ::Rails.root,
           system_dir: ::Rails.root.join('config/system'),
         }
-        container.config.update(default_options.merge(options))
 
+        container.hooks[:before_configure].each { |hook| container.instance_eval(&hook) }
+        container.config.update(default_options.merge(options))
         container.load_paths!('lib', 'app', 'app/models')
+        container.hooks[:after_configure].each { |hook| container.instance_eval(&hook) }
 
         container
       end
